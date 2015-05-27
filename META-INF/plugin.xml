@@ -1,0 +1,46 @@
+<idea-plugin version="2">
+  <id>com.digitalsandwich.phake</id>
+  <name>Phake Mocking Hints</name>
+  <version>0.1</version>
+  <vendor email="m@digitalsandwich.com" url="http://digitalsandwich.com">Mike Lively</vendor>
+
+  <description><![CDATA[
+      Provides auto completion and code navigation for tests written using the Phake mocking framework.
+    ]]></description>
+
+  <change-notes><![CDATA[
+
+    ]]>
+  </change-notes>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+  <idea-version since-build="131"/>
+
+  <!-- please see https://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+       on how to target different products -->
+  <!-- uncomment to enable plugin in all products
+  <depends>com.intellij.modules.lang</depends>
+  -->
+
+  <depends>com.jetbrains.php</depends>
+  <depends>com.intellij.modules.platform</depends>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <completion.contributor language="PHP" implementationClass="com.digitalsandwich.phake.PhakeCompletionContributor" />
+
+    <php.typeProvider2 implementation="com.digitalsandwich.phake.PhakeMockTypeProvider"/>
+  </extensions>
+
+  <application-components>
+    <!-- Add your application components here -->
+  </application-components>
+
+  <project-components>
+    <!-- Add your project components here -->
+  </project-components>
+
+  <actions>
+    <!-- Add your actions here -->
+  </actions>
+
+</idea-plugin>
