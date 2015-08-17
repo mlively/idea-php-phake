@@ -98,9 +98,9 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
         if (parameters.length > parameterPosition)
         {
             PsiElement parameter = parameters[parameterPosition];
-            if (parameter instanceof Variable)
+            if (parameter instanceof PhpTypedElement)
             {
-                PhpType type = ((Variable) parameter).getType();
+                PhpType type = ((PhpTypedElement) parameter).getType();
                 typeList = StringUtil.join(type.getTypes(), "|");
             }
         }
@@ -109,32 +109,23 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
 
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String s, Project project) {
-
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<PhpNamedElement> signedClasses = new ArrayList<PhpNamedElement>();
+        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
         if (s.substring(0, 4).equals(CALLTYPE_MOCK))
         {
-            int separator = s.indexOf("~");
-            String phakeSignature = s.substring(4, separator);
-            String className = s.substring(separator + 1);
-
-            PhpClass phpClass = phpIndex.getClassByName(className);
-            signedClasses.addAll(phpIndex.getBySignature(phakeSignature));
-            if (phpClass != null)
-            {
-                signedClasses.add(phpClass);
-            }
-            else
-            {
-                signedClasses.addAll(phpIndex.getInterfacesByName(className));
-            }
+            signedClasses.addAll(getSignedClassesFromCalltypeMock(s, phpIndex));
         }
         else if (s.substring(0, 4).equals(CALLTYPE_VERIFICATION) || s.substring(0, 4).equals(CALLTYPE_STUB))
         {
             for (String signature : StringUtil.split(s.substring(4),"|"))
             {
-                Collection<? extends PhpNamedElement> phpNamedElements = phpIndex.getBySignature(signature);
-                signedClasses.addAll(phpNamedElements);
+                int mockPosition = signature.indexOf(CALLTYPE_MOCK);
+                if (mockPosition >= 0) {
+                    signedClasses.addAll(getSignedClassesFromCalltypeMock(signature.substring(mockPosition), phpIndex));
+                }
+                else {
+                    signedClasses.addAll(getSignedClassesFromPipeDelimitedClassNames(signature, phpIndex));
+                }
             }
         }
         else if (s.substring(0, 4).equals(CALLTYPE_STUBBED_METHOD))
@@ -144,6 +135,39 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
         }
 
         return signedClasses.size() == 0 ? null : signedClasses;
+    }
+
+    private Collection<? extends PhpNamedElement> getSignedClassesFromCalltypeMock(String s, PhpIndex phpIndex) {
+        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
+
+        int separator = s.indexOf("~");
+
+        String phakeSignature = s.substring(4, separator);
+        signedClasses.addAll(phpIndex.getBySignature(phakeSignature));
+
+        String pipeDelimitedPhpClassNames = s.substring(separator + 1);
+        signedClasses.addAll(getSignedClassesFromPipeDelimitedClassNames(pipeDelimitedPhpClassNames, phpIndex));
+        return signedClasses;
+    }
+
+    private Collection<? extends PhpNamedElement> getSignedClassesFromPipeDelimitedClassNames(
+            String pipeDelimitedPhpClassNames, PhpIndex phpIndex) {
+        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
+        String[] phpClassNames = pipeDelimitedPhpClassNames.split("\\|");
+        for (String phpClassName : phpClassNames) {
+            if (phpClassName.startsWith("\\")) {
+                signedClasses.addAll(phpIndex.getClassesByFQN(phpClassName));
+            }
+            else {
+                PhpClass phpClass = phpIndex.getClassByName(phpClassName);
+                if (phpClass != null) {
+                    signedClasses.add(phpClass);
+                } else {
+                    signedClasses.addAll(phpIndex.getInterfacesByName(phpClassName));
+                }
+            }
+        }
+        return signedClasses;
     }
 
     private boolean isWhenCall(String signature) {
