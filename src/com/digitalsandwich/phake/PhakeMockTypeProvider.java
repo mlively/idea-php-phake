@@ -103,6 +103,11 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
                 PhpType type = ((Variable) parameter).getType();
                 typeList = StringUtil.join(type.getTypes(), "|");
             }
+            else if (parameter instanceof MethodReference)
+            {
+                PhpType type = ((MethodReference) parameter).getType();
+                typeList = StringUtil.join(type.getTypes(), "|");
+            }
         }
         return typeList;
     }
