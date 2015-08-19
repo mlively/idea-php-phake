@@ -110,7 +110,7 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
     @Override
     public Collection<? extends PhpNamedElement> getBySignature(String s, Project project) {
         PhpIndex phpIndex = PhpIndex.getInstance(project);
-        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
+        Collection<PhpNamedElement> signedClasses = new ArrayList<PhpNamedElement>();
         if (s.substring(0, 4).equals(CALLTYPE_MOCK))
         {
             signedClasses.addAll(getSignedClassesFromCalltypeMock(s, phpIndex));
@@ -138,7 +138,7 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
     }
 
     private Collection<? extends PhpNamedElement> getSignedClassesFromCalltypeMock(String s, PhpIndex phpIndex) {
-        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
+        Collection<PhpNamedElement> signedClasses = new ArrayList<PhpNamedElement>();
 
         int separator = s.indexOf("~");
 
@@ -152,7 +152,7 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
 
     private Collection<? extends PhpNamedElement> getSignedClassesFromPipeDelimitedClassNames(
             String pipeDelimitedPhpClassNames, PhpIndex phpIndex) {
-        Collection<PhpNamedElement> signedClasses = new ArrayList<>();
+        Collection<PhpNamedElement> signedClasses = new ArrayList<PhpNamedElement>();
         String[] phpClassNames = pipeDelimitedPhpClassNames.split("\\|");
         for (String phpClassName : phpClassNames) {
             if (phpClassName.startsWith("\\")) {
