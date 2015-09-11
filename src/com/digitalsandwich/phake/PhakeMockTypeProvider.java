@@ -124,9 +124,14 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
 
             PhpClass phpClass = phpIndex.getClassByName(className);
             signedClasses.addAll(phpIndex.getBySignature(phakeSignature));
+            Collection<PhpClass> fqnClasses = phpIndex.getClassesByFQN(className);
             if (phpClass != null)
             {
                 signedClasses.add(phpClass);
+            }
+            else if (fqnClasses.size() > 0)
+            {
+                signedClasses.addAll(fqnClasses);
             }
             else
             {
