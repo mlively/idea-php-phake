@@ -23,6 +23,7 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
     public static final String CALLTYPE_VERIFICATION = "<02>";
     public static final String CALLTYPE_STUB = "<03>";
     public static final String CALLTYPE_STUBBED_METHOD = "<04>";
+    public static final String CALLTYPE_VERIFIED_METHOD = "<05>";
 
     @Override
     public char getKey() {
@@ -78,7 +79,7 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
             {
                 MethodReference previousMethodInChain = PsiTreeUtil.findChildOfType(psiElement, MethodReference.class);
 
-                if (previousMethodInChain != null && (isWhenCall(previousMethodInChain.getSignature())))
+                if (previousMethodInChain != null && isWhenCall(previousMethodInChain.getSignature()))
                 {
                     return CALLTYPE_STUBBED_METHOD;
                 }
@@ -86,6 +87,19 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
             else if (signature.startsWith("#M#") && signature.contains(CALLTYPE_STUBBED_METHOD))
             {
                 return CALLTYPE_STUBBED_METHOD;
+            }
+            else if (signature.startsWith("#M#") && signature.contains(CALLTYPE_VERIFICATION))
+            {
+                MethodReference previousMethodInChain = PsiTreeUtil.findChildOfType(psiElement, MethodReference.class);
+
+                if (previousMethodInChain != null && isVerifyCall(previousMethodInChain.getSignature()))
+                {
+                    return CALLTYPE_VERIFIED_METHOD;
+                }
+            }
+            else if (signature.startsWith("#M#") && signature.contains(CALLTYPE_VERIFIED_METHOD))
+            {
+                return CALLTYPE_VERIFIED_METHOD;
             }
         }
         return null;
@@ -145,6 +159,11 @@ public class PhakeMockTypeProvider implements PhpTypeProvider2
         {
             PhpClass answerBinder = phpIndex.getClassByName("Phake_Proxies_AnswerBinderProxy");
             signedClasses.add(answerBinder);
+        }
+        else if (s.substring(0, 4).equals(CALLTYPE_VERIFIED_METHOD))
+        {
+            PhpClass verifierResult = phpIndex.getClassByName("Phake_CallRecorder_VerifierResult");
+            signedClasses.add(verifierResult);
         }
 
         return signedClasses.size() == 0 ? null : signedClasses;
